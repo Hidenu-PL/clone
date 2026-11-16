@@ -1,0 +1,170 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: clone
+    description: Page cloning operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /clone:
+    post:
+      operationId: clonePage
+      tags: [clone]
+      summary: Clone a web page
+      description: Fetches a URL and extracts all HTML, CSS, images, and scripts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloneRequest"
+      responses:
+        "200":
+          description: Successfully cloned page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloneResult"
+        "400":
+          description: Invalid URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Failed to clone page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /clone/history:
+    get:
+      operationId: getCloneHistory
+      tags: [clone]
+      summary: Get clone history
+      description: Returns a list of recently cloned pages
+      responses:
+        "200":
+          description: List of recent clones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CloneHistoryItem"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    CloneRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          description: The URL to clone
+      required:
+        - url
+    CloneResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+        title:
+          type: string
+        html:
+          type: string
+        cssFiles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Asset"
+        jsFiles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Asset"
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/Asset"
+        htmlSize:
+          type: integer
+        totalAssets:
+          type: integer
+        clonedAt:
+          type: string
+      required:
+        - id
+        - url
+        - title
+        - html
+        - cssFiles
+        - jsFiles
+        - images
+        - htmlSize
+        - totalAssets
+        - clonedAt
+    Asset:
+      type: object
+      properties:
+        url:
+          type: string
+        type:
+          type: string
+        size:
+          type: integer
+      required:
+        - url
+        - type
+        - size
+    CloneHistoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+        title:
+          type: string
+        totalAssets:
+          type: integer
+        clonedAt:
+          type: string
+      required:
+        - id
+        - url
+        - title
+        - totalAssets
+        - clonedAt
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
